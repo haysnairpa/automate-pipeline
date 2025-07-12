@@ -1,21 +1,37 @@
 import pandas as pd
 from sqlalchemy import create_engine
+from dotenv import load_dotenv
 import os
 
-# Setup database Configuration
-engine = create_engine(os.getenv("DATABASE_URL"))
+# Load .env
+load_dotenv()
+DATABASE_URL = os.getenv("DATABASE_URL")
+engine = create_engine(DATABASE_URL)
 
 # Load Excel
-df = pd.read_excel("Online Retail.xlsx")
+df = pd.read_excel("data/Online Retail.xlsx")
 
-# Format column name
-df.columns = [c.strip().lower().replace(' ', '') for c in df.columns]
-df = df.rename(columns={'invoicedate': 'invoicedate'}) 
+# Drop rows where essential columns are empty
+required_columns = ["InvoiceNo", "StockCode", "Description", "Quantity", "InvoiceDate", "UnitPrice", "CustomerID"]
+df.dropna(subset=required_columns, inplace=True)
 
-# Convert date format
-df['invoicedate'] = pd.to_datetime(df['invoicedate'])
+# Format data
+df["InvoiceDate"] = pd.to_datetime(df["InvoiceDate"])
+df["CustomerID"] = df["CustomerID"].astype(int)
 
-# Connect to DB and upload
-df.to_sql('sales', engine, if_exists='append', index=False)
+# Insert into the sales table
+try:
+    df.to_sql("sales", engine, if_exists="replace", index=False)
+    print(f"✅ Inserted {len(df)} rows to 'sales'")
+except Exception as e:
+    print("❌ Error inserting into 'sales':", e)
 
-print("Successful upload to PostgreSQL")
+# Insert into the sales_log table (with additional columns)
+try:
+    df_log = df.copy()
+    df_log["inserted_at"] = pd.Timestamp.now()
+    df_log["source"] = "initial_import"
+    df_log.to_sql("sales_log", engine, if_exists="replace", index=False)
+    print(f"✅ Inserted {len(df_log)} rows to 'sales_log'")
+except Exception as e:
+    print("❌ Error inserting into 'sales_log':", e)

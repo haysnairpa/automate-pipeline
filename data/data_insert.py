@@ -1,34 +1,34 @@
-import os
 import pandas as pd
-import numpy as np
-import datetime
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
+import os
+import datetime
 
-# Load environment variable
+# Load environment variables
 load_dotenv()
-db_url = os.getenv("DATABASE_URL")
-engine = create_engine(db_url)
+DATABASE_URL = os.getenv("DATABASE_URL")
+engine = create_engine(DATABASE_URL)
 
-# Get 5000 rows from sales table
-df = pd.read_sql("SELECT * FROM sales LIMIT 5000", con=engine)
+# Get data from the 'sales' table (master data)
+df = pd.read_sql("SELECT * FROM sales", con=engine)
 
-# Simulate 100 rows
+# Simulate a daily batch of 100 rows (daily rotation based on date)
 today = datetime.date.today()
 hash_id = today.toordinal() % len(df)
 start = hash_id * 100 % len(df)
 end = (start + 100) % len(df)
 
+# Slice batch data
 if start < end:
-    simulated = df.iloc[start:end].copy()
+    daily_data = df.iloc[start:end]
 else:
-    simulated = pd.concat([df.iloc[start:], df.iloc[:end]]).copy()
+    daily_data = pd.concat([df.iloc[start:], df.iloc[:end]])
 
-# Add tracking info
-simulated["inserted_at"] = datetime.datetime.now()
-simulated["source"] = "auto_simulation"
+# Add additional tracking columns
+daily_data["inserted_at"] = datetime.datetime.now()
+daily_data["source"] = "auto_simulation"
 
-# Insert to sales_log table
-simulated.to_sql("sales_log", con=engine, if_exists="append", index=False)
+# Save to sales_log
+daily_data.to_sql("sales_log", engine, if_exists="append", index=False)
 
-print(f"✅ {len(simulated)} rows inserted to 'sales_log' at {datetime.datetime.now()}")
+print(f"✅ {len(daily_data)} rows inserted to 'sales_log' at {datetime.datetime.now()}")
