@@ -3,3 +3,6 @@ openpyxl
 sqlalchemy
 psycopg2-binary
 python-dotenv
+streamlit
+scikit-learn
+joblib
