@@ -1,0 +1,9 @@
+{
+    "build": {
+      "env": {
+        "PYTHONUNBUFFERED": "1"
+      }
+    },
+    "start": "python data/data_insert.py"
+  }
+  
