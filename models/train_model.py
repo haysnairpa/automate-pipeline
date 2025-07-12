@@ -5,6 +5,7 @@ from sklearn.metrics import mean_squared_error
 import joblib
 import sys
 import os
+import re
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'data'))
 from etl import run_etl
@@ -54,5 +55,5 @@ if __name__ == "__main__":
     for desc in monthly_product_df["Description"].unique():
         prod_df = monthly_product_df[monthly_product_df["Description"] == desc]
         if len(prod_df) >= 5:
-            safe_name = desc.replace(" ", "_").replace("/", "_").lower()[:30]
+            safe_name = re.sub(r'[^a-zA-Z0-9_]', '_', desc.lower())[:50]
             train_model(prod_df, name=f"product_{safe_name}")
