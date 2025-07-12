@@ -21,8 +21,9 @@ with tab1:
     st.header("📊 Global Monthly Sales")
     st.line_chart(monthly_sales_df.set_index("Month")["TotalRevenue"])
 
-    if os.path.exists("global_model.pkl"):
-        model = joblib.load("global_model.pkl")
+    global_model_path = os.path.join("models", "global_model.pkl")
+    if os.path.exists(global_model_path):
+        model = joblib.load(global_model_path)
         last_index = monthly_sales_df["Month"].factorize()[0].max() + 1
         prediction = model.predict([[last_index]])
         st.success(f"📅 Forecast Next Month Revenue: **£{prediction[0]:,.2f}**")
@@ -37,7 +38,7 @@ with tab2:
 
     st.line_chart(cust_df.set_index("Month")["TotalRevenue"])
 
-    model_path = f"customer_{int(selected_id)}_model.pkl"
+    model_path = os.path.join("models", f"customer_{int(selected_id)}_model.pkl")
     if os.path.exists(model_path):
         model = joblib.load(model_path)
         last_index = cust_df["Month"].factorize()[0].max() + 1
@@ -55,7 +56,7 @@ with tab3:
     st.line_chart(prod_df.set_index("Month")["TotalRevenue"])
 
     safe_name = selected_prod.replace(" ", "_").replace("/", "_").lower()[:30]
-    model_path = f"product_{safe_name}_model.pkl"
+    model_path = os.path.join("models", f"product_{safe_name}_model.pkl")
     if os.path.exists(model_path):
         model = joblib.load(model_path)
         last_index = prod_df["Month"].factorize()[0].max() + 1
