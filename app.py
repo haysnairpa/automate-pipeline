@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import joblib
-from etl import run_etl
+from data.etl import run_etl
 import os
 
 # ======== Load Data ========
