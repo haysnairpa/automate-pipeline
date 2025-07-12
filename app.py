@@ -356,7 +356,6 @@ with tab1:
         <div style='background-color:#1F4E79; padding:10px; border-radius:5px;'>
             <h4 style='margin-top:0;'>Forecast Analysis</h4>
             <p>{forecast_message}</p>
-            <p>Based on the historical trends and seasonality patterns in your sales data.</p>
         </div>
         """, unsafe_allow_html=True)
         
@@ -487,11 +486,14 @@ with tab2:
             forecast_df = cust_df.copy()
             next_month_idx = pd.to_datetime(forecast_df["Month"].iloc[-1]) + pd.DateOffset(months=1)
             next_month = next_month_idx.strftime("%Y-%m")
-            forecast_df = forecast_df.append({
-                "Month": next_month, 
-                "CustomerID": selected_id, 
-                "TotalRevenue": prediction[0]
-            }, ignore_index=True)
+            
+            # Create a new row as a DataFrame and concat instead of using append (deprecated in pandas 2.0+)
+            new_row = pd.DataFrame({
+                "Month": [next_month], 
+                "CustomerID": [selected_id], 
+                "TotalRevenue": [prediction[0]]
+            })
+            forecast_df = pd.concat([forecast_df, new_row], ignore_index=True)
             
             # Create forecast chart with confidence interval
             forecast_fig = px.line(
@@ -664,11 +666,14 @@ with tab3:
             forecast_df = prod_df.copy()
             next_month_idx = pd.to_datetime(forecast_df["Month"].iloc[-1]) + pd.DateOffset(months=1)
             next_month = next_month_idx.strftime("%Y-%m")
-            forecast_df = forecast_df.append({
-                "Month": next_month, 
-                "Description": selected_prod, 
-                "TotalRevenue": prediction[0]
-            }, ignore_index=True)
+            
+            # Create a new row as a DataFrame and concat instead of using append (deprecated in pandas 2.0+)
+            new_row = pd.DataFrame({
+                "Month": [next_month], 
+                "Description": [selected_prod], 
+                "TotalRevenue": [prediction[0]]
+            })
+            forecast_df = pd.concat([forecast_df, new_row], ignore_index=True)
             
             # Create forecast chart with confidence interval
             forecast_fig = px.line(
